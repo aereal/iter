@@ -1,0 +1,36 @@
+---
+linters:
+  disable-all: true
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - contextcheck
+    - durationcheck
+    - err113
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - makezero
+    - nilerr
+    - noctx
+    - protogetter
+    - reassign
+    - staticcheck
+    - tenv
+    - testableexamples
+    - testpackage
+    - tparallel
+    - unused
+linters-settings:
+  errcheck:
+    check-type-assertions: true

@@ -50,6 +50,27 @@ func TestDropWhile(t *testing.T) {
 	}
 }
 
+func TestTake(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    iter.Seq[int]
+		inputNum int
+		want     []int
+	}{
+		{name: "ok", input: list(1, 2, 3), inputNum: 2, want: []int{1, 2}},
+		{name: "The N is greater than input iterator's length", input: list(1, 2, 3), inputNum: 4, want: []int{1, 2, 3}},
+		{name: "The N is negative", input: list(1, 2, 3), inputNum: -1, want: []int{}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := seq.Take(tc.input, tc.inputNum)
+			if gv := values(got); !reflect.DeepEqual(gv, tc.want) {
+				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, gv)
+			}
+		})
+	}
+}
+
 func list[T any](xs ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, x := range xs {

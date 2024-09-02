@@ -35,3 +35,19 @@ func DropWhile[T any](s iter.Seq[T], predicate func(T) bool) iter.Seq[T] {
 		}
 	}
 }
+
+// Take returns new [iter.Seq] that yields first n elements from the argument.
+func Take[T any](s iter.Seq[T], n int) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		var seen int
+		for v := range s {
+			seen++
+			if seen > n {
+				break
+			}
+			if !yield(v) {
+				break
+			}
+		}
+	}
+}

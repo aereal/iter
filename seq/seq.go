@@ -51,3 +51,17 @@ func Take[T any](s iter.Seq[T], n int) iter.Seq[T] {
 		}
 	}
 }
+
+// TakeWhile return new [iter.Seq] that yields longest prefix of elements from the argument.
+func TakeWhile[T any](s iter.Seq[T], predicate func(T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for v := range s {
+			if !predicate(v) {
+				break
+			}
+			if !yield(v) {
+				break
+			}
+		}
+	}
+}

@@ -88,3 +88,29 @@ func Zip[A, B any](as iter.Seq[A], bs iter.Seq[B]) iter.Seq2[A, B] {
 		}
 	}
 }
+
+func ZipAll[A, B any](as iter.Seq[A], bs iter.Seq[B], fillA A, fillB B) iter.Seq2[A, B] {
+	return func(yield func(A, B) bool) {
+		nextA, stopA := iter.Pull(as)
+		defer stopA()
+		nextB, stopB := iter.Pull(bs)
+		defer stopB()
+		for {
+			a, foundA := nextA()
+			if !foundA {
+				a = fillA
+			}
+			b, foundB := nextB()
+			if !foundB {
+				b = fillB
+			}
+			if !foundA && !foundB {
+				break
+			}
+			if !yield(a, b) {
+				break
+			}
+		}
+
+	}
+}

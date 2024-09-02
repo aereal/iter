@@ -19,3 +19,19 @@ func Drop[T any](s iter.Seq[T], n int) iter.Seq[T] {
 		}
 	}
 }
+
+// DropWhile returns new [iter.Seq] that yields the elements but dropped longest prefix satisfy the predicate from the argument.
+func DropWhile[T any](s iter.Seq[T], predicate func(T) bool) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		skip := true
+		for v := range s {
+			if skip && predicate(v) {
+				continue
+			}
+			skip = false
+			if !yield(v) {
+				break
+			}
+		}
+	}
+}

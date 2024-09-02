@@ -1,0 +1,45 @@
+name: CI
+on:
+  pull_request:
+jobs:
+  test:
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    strategy:
+      matrix:
+        go_version:
+          - stable
+          - oldstable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go_version }}
+          cache: true
+          cache-dependency-path: |
+            go.sum
+      - run: go mod download
+      - name: test
+        run: go test -v -race -coverprofile=cover.out ./...
+      - uses: k1LoW/octocov-action@v1
+        if: ${{ matrix.go_version == 'stable' }}
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: reviewdog/action-golangci-lint@v2
+        with:
+          level: warning
+          reporter: github-pr-check
+          filter_mode: nofilter
+  ok:
+    if: failure()
+    needs:
+      - test
+      - lint
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1

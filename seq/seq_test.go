@@ -91,6 +91,50 @@ func TestTakeWhile(t *testing.T) {
 	}
 }
 
+func TestZip(t *testing.T) {
+	testCases := []struct {
+		name string
+		as   iter.Seq[int]
+		bs   iter.Seq[string]
+		want []pair[int, string]
+	}{
+		{name: "ok", as: list(1, 2, 3), bs: list("a", "b", "c"), want: []pair[int, string]{{1, "a"}, {2, "b"}, {3, "c"}}},
+		{name: "as is shorter than bs", as: list(1, 2), bs: list("a", "b", "c"), want: []pair[int, string]{{1, "a"}, {2, "b"}}},
+		{name: "bs is shorter than as", as: list(1, 2, 3), bs: list("a", "b"), want: []pair[int, string]{{1, "a"}, {2, "b"}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := seq.Zip(tc.as, tc.bs)
+			if gv := pairs(got); !reflect.DeepEqual(gv, tc.want) {
+				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, gv)
+			}
+		})
+	}
+}
+
+func TestZipAll(t *testing.T) {
+	testCases := []struct {
+		name    string
+		as      iter.Seq[int]
+		bs      iter.Seq[string]
+		fillInt int
+		fillStr string
+		want    []pair[int, string]
+	}{
+		{name: "ok", as: list(1, 2, 3), bs: list("a", "b", "c"), want: []pair[int, string]{{1, "a"}, {2, "b"}, {3, "c"}}},
+		{name: "as is shorter than bs", fillInt: -1, as: list(1, 2), bs: list("a", "b", "c"), want: []pair[int, string]{{1, "a"}, {2, "b"}, {-1, "c"}}},
+		{name: "bs is shorter than as", fillStr: "z", as: list(1, 2, 3), bs: list("a", "b"), want: []pair[int, string]{{1, "a"}, {2, "b"}, {3, "z"}}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := seq.ZipAll(tc.as, tc.bs, tc.fillInt, tc.fillStr)
+			if gv := pairs(got); !reflect.DeepEqual(gv, tc.want) {
+				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, gv)
+			}
+		})
+	}
+}
+
 func list[T any](xs ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, x := range xs {
@@ -105,6 +149,19 @@ func values[T any](s iter.Seq[T]) []T {
 	ret := make([]T, 0)
 	for v := range s {
 		ret = append(ret, v)
+	}
+	return ret
+}
+
+type pair[A, B any] struct {
+	A A
+	B B
+}
+
+func pairs[A, B any](s iter.Seq2[A, B]) []pair[A, B] {
+	ret := make([]pair[A, B], 0)
+	for a, b := range s {
+		ret = append(ret, pair[A, B]{a, b})
 	}
 	return ret
 }

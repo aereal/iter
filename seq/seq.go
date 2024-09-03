@@ -65,3 +65,52 @@ func TakeWhile[T any](s iter.Seq[T], predicate func(T) bool) iter.Seq[T] {
 		}
 	}
 }
+
+// Zip returns new [iter.Seq2] yields elements that by combining corresponding elements in pairs from each sequences.
+func Zip[A, B any](as iter.Seq[A], bs iter.Seq[B]) iter.Seq2[A, B] {
+	return func(yield func(A, B) bool) {
+		nextA, stopA := iter.Pull(as)
+		defer stopA()
+		nextB, stopB := iter.Pull(bs)
+		defer stopB()
+		for {
+			a, ok := nextA()
+			if !ok {
+				break
+			}
+			b, ok := nextB()
+			if !ok {
+				break
+			}
+			if !yield(a, b) {
+				break
+			}
+		}
+	}
+}
+
+func ZipAll[A, B any](as iter.Seq[A], bs iter.Seq[B], fillA A, fillB B) iter.Seq2[A, B] {
+	return func(yield func(A, B) bool) {
+		nextA, stopA := iter.Pull(as)
+		defer stopA()
+		nextB, stopB := iter.Pull(bs)
+		defer stopB()
+		for {
+			a, foundA := nextA()
+			if !foundA {
+				a = fillA
+			}
+			b, foundB := nextB()
+			if !foundB {
+				b = fillB
+			}
+			if !foundA && !foundB {
+				break
+			}
+			if !yield(a, b) {
+				break
+			}
+		}
+
+	}
+}

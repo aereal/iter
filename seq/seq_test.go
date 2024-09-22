@@ -1,8 +1,10 @@
 package seq_test
 
 import (
+	"fmt"
 	"iter"
 	"reflect"
+	"slices"
 	"testing"
 
 	"github.com/aereal/iter/seq"
@@ -130,6 +132,46 @@ func TestZipAll(t *testing.T) {
 			got := seq.ZipAll(tc.as, tc.bs, tc.fillInt, tc.fillStr)
 			if gv := pairs(got); !reflect.DeepEqual(gv, tc.want) {
 				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, gv)
+			}
+		})
+	}
+}
+
+func TestChunk(t *testing.T) {
+	testCases := []struct {
+		input iter.Seq[string]
+		size  int
+		want  [][]string
+	}{
+		{
+			input: slices.Values([]string{"a", "b", "c", "d"}),
+			size:  2,
+			want:  [][]string{{"a", "b"}, {"c", "d"}},
+		},
+		{
+			input: slices.Values([]string{"a", "b", "c", "d", "e"}),
+			size:  2,
+			want:  [][]string{{"a", "b"}, {"c", "d"}, {"e"}},
+		},
+		{
+			input: slices.Values([]string{"a", "b"}),
+			size:  3,
+			want:  [][]string{{"a", "b"}},
+		},
+		{
+			input: slices.Values([]string{}),
+			size:  2,
+			want:  nil,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("size=%d input=%#v", tc.size, slices.Collect(tc.input)), func(t *testing.T) {
+			var got [][]string
+			for s := range seq.Chunk(tc.input, tc.size) {
+				got = append(got, slices.Collect(s))
+			}
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("values:\n\twant: %#v\n\t got: %#v", tc.want, got)
 			}
 		})
 	}

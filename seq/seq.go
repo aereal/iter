@@ -1,6 +1,9 @@
 package seq
 
-import "iter"
+import (
+	"iter"
+	"slices"
+)
 
 // Drop returns new [iter.Seq] that yields all elements from the argument except first n ones.
 //
@@ -112,5 +115,24 @@ func ZipAll[A, B any](as iter.Seq[A], bs iter.Seq[B], fillA A, fillB B) iter.Seq
 			}
 		}
 
+	}
+}
+
+// Chunk returns an iterator over consecutive elements of up to n elements of s.
+func Chunk[T any](s iter.Seq[T], n int) iter.Seq[iter.Seq[T]] {
+	return func(yield func(iter.Seq[T]) bool) {
+		buf := make([]T, 0, n)
+		for el := range s {
+			buf = append(buf, el)
+			if len(buf) >= n {
+				if !yield(slices.Values(buf)) {
+					break
+				}
+				buf = buf[0:0]
+			}
+		}
+		if len(buf) > 0 {
+			_ = yield(slices.Values(buf))
+		}
 	}
 }

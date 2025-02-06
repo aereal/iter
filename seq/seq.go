@@ -136,3 +136,16 @@ func Chunk[T any](s iter.Seq[T], n int) iter.Seq[iter.Seq[T]] {
 		}
 	}
 }
+
+// UnnestOnce flattens a sequence of sequences into a single sequence.
+func UnnestOnce[T any](nested iter.Seq[iter.Seq[T]]) iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for xs := range nested {
+			for x := range xs {
+				if !yield(x) {
+					return
+				}
+			}
+		}
+	}
+}

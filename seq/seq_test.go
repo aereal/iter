@@ -177,6 +177,39 @@ func TestChunk(t *testing.T) {
 	}
 }
 
+func TestUnnestOnce(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input iter.Seq[iter.Seq[int]]
+		want  []int
+	}{
+		{
+			name:  "one element",
+			input: slices.Values([]iter.Seq[int]{slices.Values([]int{1, 2, 3})}),
+			want:  []int{1, 2, 3},
+		},
+		{
+			name:  "multiple elements",
+			input: slices.Values([]iter.Seq[int]{slices.Values([]int{1, 2, 3}), slices.Values([]int{4, 5, 6})}),
+			want:  []int{1, 2, 3, 4, 5, 6},
+		},
+		{
+			name:  "empty",
+			input: slices.Values([]iter.Seq[int]{}),
+			want:  nil,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got := slices.Collect(seq.UnnestOnce(tc.input))
+			if !reflect.DeepEqual(tc.want, got) {
+				t.Errorf("values:\n\twant: %#v\n\t got: %#v", tc.want, got)
+			}
+		})
+	}
+}
+
 func list[T any](xs ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, x := range xs {

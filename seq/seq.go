@@ -149,3 +149,25 @@ func UnnestOnce[T any](nested iter.Seq[iter.Seq[T]]) iter.Seq[T] {
 		}
 	}
 }
+
+// ChunkPairs returns an iterator iter.Seq2[T, T] that generates consecutive pairs (T, T) from the input iterator iter.Seq[T].
+// If the input sequence has an odd number of elements, the last element is ignored.
+func ChunkPairs[T any](input iter.Seq[T]) iter.Seq2[T, T] {
+	return func(yield func(T, T) bool) {
+		it, stop := iter.Pull(input)
+		defer stop()
+		for {
+			valFirst, okFirst := it()
+			if !okFirst {
+				return
+			}
+			valSecond, okSecond := it()
+			if !okSecond {
+				return
+			}
+			if !yield(valFirst, valSecond) {
+				return
+			}
+		}
+	}
+}

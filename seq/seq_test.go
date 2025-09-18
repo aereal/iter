@@ -250,6 +250,89 @@ func TestChunkPairs(t *testing.T) {
 	}
 }
 
+func TestMap(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input iter.Seq[int]
+		fn    func(int) string
+		want  []string
+	}{
+		{
+			name:  "int to string",
+			input: list(1, 2, 3),
+			fn:    func(i int) string { return fmt.Sprintf("num%d", i) },
+			want:  []string{"num1", "num2", "num3"},
+		},
+		{
+			name:  "empty input",
+			input: list[int](),
+			fn:    func(i int) string { return fmt.Sprintf("%d", i) },
+			want:  []string{},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := seq.Map(tc.input, tc.fn)
+			if gv := values(got); !reflect.DeepEqual(gv, tc.want) {
+				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, gv)
+			}
+		})
+	}
+}
+
+func TestFlatMap(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input iter.Seq[int]
+		fn    func(int) iter.Seq[string]
+		want  []string
+	}{
+		{
+			name:  "each element to multiple strings",
+			input: list(1, 2, 3),
+			fn: func(i int) iter.Seq[string] {
+				return list(fmt.Sprintf("a%d", i), fmt.Sprintf("b%d", i))
+			},
+			want: []string{"a1", "b1", "a2", "b2", "a3", "b3"},
+		},
+		{
+			name:  "some elements produce empty sequences",
+			input: list(1, 2, 3),
+			fn: func(i int) iter.Seq[string] {
+				if i%2 == 0 {
+					return list[string]()
+				}
+				return list(fmt.Sprintf("odd%d", i))
+			},
+			want: []string{"odd1", "odd3"},
+		},
+		{
+			name:  "empty input",
+			input: list[int](),
+			fn: func(i int) iter.Seq[string] {
+				return list(fmt.Sprintf("%d", i))
+			},
+			want: []string{},
+		},
+		{
+			name:  "all elements produce empty sequences",
+			input: list(1, 2, 3),
+			fn: func(i int) iter.Seq[string] {
+				return list[string]()
+			},
+			want: []string{},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := seq.FlatMap(tc.input, tc.fn)
+			if gv := values(got); !reflect.DeepEqual(gv, tc.want) {
+				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, gv)
+			}
+		})
+	}
+}
+
 func list[T any](xs ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, x := range xs {

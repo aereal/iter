@@ -171,3 +171,27 @@ func ChunkPairs[T any](input iter.Seq[T]) iter.Seq2[T, T] {
 		}
 	}
 }
+
+// Map transforms each element by applying the given function.
+func Map[T any, R any](s iter.Seq[T], f func(T) R) iter.Seq[R] {
+	return func(yield func(R) bool) {
+		for t := range s {
+			if !yield(f(t)) {
+				return
+			}
+		}
+	}
+}
+
+// FlatMap transforms each element into a sequence and flattens the result.
+func FlatMap[T any, R any](s iter.Seq[T], f func(T) iter.Seq[R]) iter.Seq[R] {
+	return func(yield func(R) bool) {
+		for t := range s {
+			for r := range f(t) {
+				if !yield(r) {
+					return
+				}
+			}
+		}
+	}
+}

@@ -24,17 +24,55 @@ jobs:
       - run: go mod download
       - name: test
         run: go test -v -race -coverprofile=cover.out ./...
-      - uses: k1LoW/octocov-action@73d561f65d59e66899ed5c87e4621a913b5d5c20 # v1.5.0
+      - uses: aquaproj/aqua-installer@ea518c135a02fc11ff8024364510c181a5c6b342 # v4.0.3
         if: ${{ matrix.go_version == 'stable' }}
+        with:
+          aqua_version: v2.54.1
+          policy_allow: true
+      - name: octocov
+        if: ${{ matrix.go_version == 'stable' }}
+        env:
+          OCTOCOV_GITHUB_TOKEN: ${{ github.token }}
+        run: octocov
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    env:
+      AQUA_CONFIG: ${{ github.workspace }}/aqua.yaml
+      AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua-policy.yaml
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: reviewdog/action-golangci-lint@f9bba13753278f6a73b27a56a3ffb1bfda90ed71 # v2.8.0
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
         with:
-          level: warning
-          reporter: github-pr-check
-          filter_mode: nofilter
+          cache: true
+          go-version: stable
+      - run: go mod download
+      - uses: aquaproj/aqua-installer@ea518c135a02fc11ff8024364510c181a5c6b342 # v4.0.3
+        with:
+          aqua_version: v2.54.1
+          policy_allow: true
+      - name: golangci-lint
+        run: |
+          golangci-lint run \
+            --output.text.path stdout \
+            --output.text.print-issued-lines \
+            --issues-exit-code 0 \
+            --config .golangci.yml \
+            1>lint-stdout.txt 2>/dev/stderr
+      - name: reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ github.token }}
+        run: |
+          reviewdog \
+            -name golangci-lint \
+            -f golangci-lint \
+            -filter-mode nofilter \
+            -reporter github-pr-check \
+            -fail-level error \
+            < lint-stdout.txt
   ok:
     if: failure()
     needs:

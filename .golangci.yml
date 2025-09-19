@@ -1,6 +1,7 @@
 ---
+version: "2"
 linters:
-  disable-all: true
+  default: none
   enable:
     - asasalint
     - asciicheck
@@ -17,7 +18,6 @@ linters:
     - gocheckcompilerdirectives
     - gochecksumtype
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - makezero
@@ -26,11 +26,10 @@ linters:
     - protogetter
     - reassign
     - staticcheck
-    - tenv
     - testableexamples
     - testpackage
     - tparallel
     - unused
-linters-settings:
-  errcheck:
-    check-type-assertions: true
+  settings:
+    errcheck:
+      check-type-assertions: true

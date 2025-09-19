@@ -23,7 +23,7 @@ jobs:
             go.sum
       - run: go mod download
       - name: test
-        run: go test -v -race -coverprofile=cover.out ./...
+        run: go test -v -race -coverprofile=coverage.out ./...
       - uses: aquaproj/aqua-installer@ea518c135a02fc11ff8024364510c181a5c6b342 # v4.0.3
         if: ${{ matrix.go_version == 'stable' }}
         with:

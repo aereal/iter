@@ -24,16 +24,8 @@ jobs:
       - run: go mod download
       - name: test
         run: go test -v -race -coverprofile=coverage.out ./...
-      - uses: aquaproj/aqua-installer@ea518c135a02fc11ff8024364510c181a5c6b342 # v4.0.3
+      - uses: k1LoW/octocov-action@v1
         if: ${{ matrix.go_version == 'stable' }}
-        with:
-          aqua_version: v2.54.1
-          policy_allow: true
-      - name: octocov
-        if: ${{ matrix.go_version == 'stable' }}
-        env:
-          OCTOCOV_GITHUB_TOKEN: ${{ github.token }}
-        run: octocov
   lint:
     runs-on: ubuntu-latest
     permissions:

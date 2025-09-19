@@ -67,6 +67,7 @@ jobs:
             < lint-stdout.txt
   ok:
     if: failure()
+    permissions: {}
     needs:
       - test
       - lint

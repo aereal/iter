@@ -333,6 +333,50 @@ func TestFlatMap(t *testing.T) {
 	}
 }
 
+func TestPairwise(t *testing.T) {
+	testCases := []struct {
+		name  string
+		input []string
+		want  []pair[string, string]
+	}{
+		{
+			name:  "empty",
+			input: []string{},
+			want:  []pair[string, string]{},
+		},
+		{
+			name:  "only one element",
+			input: []string{"a"},
+			want:  []pair[string, string]{},
+		},
+		{
+			name:  "ok",
+			input: []string{"a", "b", "c", "d"},
+			want: []pair[string, string]{
+				{"a", "b"},
+				{"b", "c"},
+				{"c", "d"},
+			},
+		},
+		{
+			name:  "3 elements",
+			input: []string{"a", "b", "c"},
+			want: []pair[string, string]{
+				{"a", "b"},
+				{"b", "c"},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := pairs(seq.Pairwise(slices.Values(tc.input)))
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("result mismatch:\n\twant: %#v\n\t got: %#v", tc.want, got)
+			}
+		})
+	}
+}
+
 func list[T any](xs ...T) iter.Seq[T] {
 	return func(yield func(T) bool) {
 		for _, x := range xs {

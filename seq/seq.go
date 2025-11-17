@@ -195,3 +195,28 @@ func FlatMap[T any, R any](s iter.Seq[T], f func(T) iter.Seq[R]) iter.Seq[R] {
 		}
 	}
 }
+
+// Pairwise returns an iterator over consecutive pairs of elements.
+// For example, [a, b, c, d] yields [(a, b), (b, c), (c, d)].
+func Pairwise[T any](s iter.Seq[T]) iter.Seq2[T, T] {
+	return func(yield func(T, T) bool) {
+		next, stop := iter.Pull(s)
+		defer stop()
+
+		prev, ok := next()
+		if !ok {
+			return
+		}
+
+		for {
+			current, ok := next()
+			if !ok {
+				return
+			}
+			if !yield(prev, current) {
+				return
+			}
+			prev = current
+		}
+	}
+}

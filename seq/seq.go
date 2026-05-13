@@ -126,7 +126,7 @@ func Chunk[T any](s iter.Seq[T], n int) iter.Seq[iter.Seq[T]] {
 			buf = append(buf, el)
 			if len(buf) >= n {
 				if !yield(slices.Values(buf)) {
-					break
+					return
 				}
 				buf = buf[0:0]
 			}
